@@ -9,27 +9,41 @@ const delay = (ms) => {
     })
 }
 
-const server = createServer((req, res) => {
+const readFile = (path) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, (err, data) => {
+            if (err) reject(err)
+            else resolve(data)
+        })
+    })
+}
 
-    switch (req.url) {
+const server = http.createServer(async (request, response) => {
 
-        case '/home':
-            fs.readFile('pages/about.html', (err, data) => {
-                if (err) res.write('500, some error occured')
-                else res.write(data)
-                res.end()
-            })
+    switch (request.url) {
+
+        case '/home': {
+            try {
+                const data = await readFile('pages/home.html')
+                response.write(data)
+                response.end()
+            } catch (err) {
+                response.write('Something wrong, 500')
+                response.end()
+            }
             break;
+        }
 
         case '/about': {
             await delay(3000)
-            res.write('About Page')
-            res.end()
+            response.write('About Page')
+            response.end()
             break;
         }
+
         default:
-            res.write('404 not found')
-            res.end()
+            response.write('404 not found')
+            response.end()
     }
 })
 
